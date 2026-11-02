@@ -21,8 +21,10 @@ foundation only (no tv-material), like SimpleTV and Trivia Night.
 
 1. **Lobby** — QR code and players. Phones that stop checking in for 20 seconds show as away
    and aren't dealt in. Start needs three players.
-2. **Deal** — each phone shows the word, or "THE IMPOSTER" (with the category if the setting
-   gives it, and the other imposters' names). Clues start once everyone taps Got it.
+2. **Deal** — each phone shows its word: the secret word, or "Imposter" in the same place,
+   size and color, so a glance at a phone gives nothing away. Imposters always know, see the
+   category if the setting gives it, and see the other imposters' names. Clues start once
+   everyone taps Got it.
 3. **Clues** — one turn each, in seat order, starting one further along each round; the first
    speaker of a game is never an imposter. The speaker's phone says "Your turn" and has Done;
    the TV's Next player moves on for them. Anyone still in can call a vote from their phone
@@ -31,9 +33,10 @@ foundation only (no tv-material), like SimpleTV and Trivia Night.
    Majority means more than half of the players still in; Everyone means all but the accused.
    A tie puts nobody out.
 5. **Result** — the votes per player, who's out, then whether they were an imposter.
-6. **Guess** — a caught imposter picks the word from eight on their phone (unless they had a
-   close word); a right guess wins it for the imposters.
-7. **Final** — who won and why, the word, everyone's part.
+6. **Guess** — a caught imposter picks the word from eight on their phone; a right guess wins
+   it for the imposters.
+7. **Final** — who won and why, the word, everyone's part. Each saved player's win or loss
+   goes on the scoreboard.
 
 Modes: **Classic** plays the chosen number of clue rounds and one vote (catch an imposter to
 win). **Ruthless** votes after every round and whoever's voted out is out; the crew wins when
@@ -54,16 +57,21 @@ can start outnumbered.
 - `PhonePage.kt` — the phone page (HTML + JS in a Kotlin string, so no dollar signs). Polls
   about twice a second and keeps its player id in localStorage. The word card hides once the
   clues start; tap to look.
-- `Players.kt`, `Household.kt` — the household's players (first name and color), shared with
-  Trivia Night: both apps swap the `trivia-players` collection with SimpleTV's shared box on
-  127.0.0.1:8724 using SimpleTV's sync key (`~/.config/simpletv/sync_key`, baked into
-  `BuildConfig.SYNC_KEY`). Players are removed in Trivia Night's High scores.
-- `LobbyScreens.kt` — lobby and settings. `GameScreens.kt` — deal, clues, vote, result, guess,
+- `Records.kt` — the household's players (first name and color; a removed one stays as a
+  "gone" note) and every saved player's results (imposter or crew, won or lost), in
+  `files/records.json`. `scoreboard()` ranks by wins, then win rate, then name.
+- `GameBridge.kt` — the Game Bridge: Red Mesa Studios games share the `players` collection
+  and keep their own results (`imposter-games`) through SimpleTV's shared box on
+  127.0.0.1:8724, using SimpleTV's sync key (`~/.config/simpletv/sync_key`, baked into
+  `BuildConfig.SYNC_KEY`). Without SimpleTV or the key, the game works the same and its
+  records stay on the one TV.
+- `ScoresScreen.kt` — the scoreboard (played, won, lost, win %, wins as imposter and as crew)
+  and the player editor (name with the TV keyboard, color, remove).
+- `LobbyScreens.kt` — lobby (Start, Settings, Scores) and settings. `GameScreens.kt` — deal, clues, vote, result, guess,
   final, and the "Press Back again" warning. `MainActivity.kt` — the screens, Back handling,
   saved settings and recent words (SharedPreferences "imposter").
 - `app/src/main/assets/words.json` — 720 words in 24 family-friendly categories, written for
-  this app: `[{"category", "words": [...]}]`. A close word is another word from the same
-  category.
+  this app: `[{"category", "words": [...]}]`.
 - `scripts/banner.py` — draws the TV banner (`uv run --no-project --with pillow python -I
   scripts/banner.py app/src/main/res/font app/src/main/res/drawable-xhdpi/banner.png`).
 
@@ -71,4 +79,4 @@ can start outnumbered.
 
 A dark plum ground, red for the imposters, mint for the crew, gold for focus. Bricolage
 Grotesque for headings and Figtree for text, both bundled (OFL licences in the repo root).
-The players' eight colors match Trivia Night's.
+The players' eight colors are the same in every game on the Game Bridge.

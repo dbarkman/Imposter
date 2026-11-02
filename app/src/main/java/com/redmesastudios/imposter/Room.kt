@@ -179,11 +179,11 @@ class Room(val pin: String, private val clock: () -> Long = SystemClock::elapsed
         )
     }
 
-    // After the TV shows who's out: a caught imposter gets one guess at the word (unless they
-    // had a close word and never knew), otherwise the game ends or the next round starts.
+    // After the TV shows who's out: a caught imposter gets one guess at the word, otherwise the
+    // game ends or the next round starts.
     fun afterResult() = updateGame(Phase.Result) { state, game ->
         val caught = game.votedOut?.takeIf { it in game.imposters }
-        if (caught != null && state.settings.gets != ImposterGets.CloseWord) state.copy(phase = Phase.Guess, game = game.copy(guess = null))
+        if (caught != null) state.copy(phase = Phase.Guess, game = game.copy(guess = null))
         else carryOn(state, game)
     }
 
@@ -235,13 +235,12 @@ class Room(val pin: String, private val clock: () -> Long = SystemClock::elapsed
         }
         if (me.id !in game.seats) return json.put("phase", "watching")
         val imposter = me.id in game.imposters
-        val knows = imposter && state.settings.gets != ImposterGets.CloseWord
         json.put("phase", state.phase.name.lowercase())
             .put("out", me.id in game.out)
-            .put("imposter", knows)
-            .put("word", if (!imposter) game.secret.word else game.secret.closeWord ?: "")
+            .put("imposter", imposter)
+            .put("word", if (imposter) "Imposter" else game.secret.word)
             .put("category", if (!imposter || state.settings.gets != ImposterGets.Nothing) game.secret.category else "")
-            .put("partners", JSONArray(if (knows) game.imposters.filter { it != me.id }.map { state.name(it) } else emptyList()))
+            .put("partners", JSONArray(if (imposter) game.imposters.filter { it != me.id }.map { state.name(it) } else emptyList()))
             .put("round", game.round)
         when (state.phase) {
             Phase.Deal -> json.put("ready", me.id in game.ready)
@@ -261,7 +260,6 @@ class Room(val pin: String, private val clock: () -> Long = SystemClock::elapsed
                 .put("ending", game.ending)
                 .put("secret", game.secret.word)
                 .put("secretCategory", game.secret.category)
-                .put("closeWord", game.secret.closeWord ?: "")
                 .put("imposters", JSONArray(game.seats.filter { it in game.imposters }.map { state.name(it) }))
             else -> Unit
         }

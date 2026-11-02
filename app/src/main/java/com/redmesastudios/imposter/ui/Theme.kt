@@ -22,8 +22,8 @@ val Gold = Color(0xFFFFD25E)
 val Red = Color(0xFFFF4D5E)
 val Mint = Color(0xFF4FE0B0)
 
-// Players' colors, in the order the phone page offers them (the same as Trivia Night's, since
-// the household's players are shared).
+// Players' colors, in the order the phone page offers them (the same in every game on the
+// Game Bridge, since the household's players are shared).
 val PlayerColors = listOf(
     Color(0xFF4DB5FF), Color(0xFFFF7A66), Mint, Gold, Color(0xFFB79BFF), Color(0xFFFF8FC7), Color(0xFFB8E55C), Color(0xFFFFA44F),
 )

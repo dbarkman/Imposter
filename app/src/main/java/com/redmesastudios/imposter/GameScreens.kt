@@ -301,7 +301,7 @@ fun GuessScreen(state: RoomState, game: GameState, onContinue: () -> Unit) {
 // Who won and why, the word, and everyone's part in it.
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun FinalScreen(state: RoomState, game: GameState, onAgain: () -> Unit, onLobby: () -> Unit) {
+fun FinalScreen(state: RoomState, game: GameState, onAgain: () -> Unit, onLobby: () -> Unit, onScores: () -> Unit) {
     val main = rememberMain()
     val crew = game.winner == Side.Crew
     Column(Modifier.fillMaxSize().padding(start = 60.dp, end = 60.dp, top = 34.dp, bottom = 34.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -314,10 +314,6 @@ fun FinalScreen(state: RoomState, game: GameState, onAgain: () -> Unit, onLobby:
             BasicText("The word was", style = Type.soft.copy(fontSize = 17.sp))
             BasicText(game.secret.word, style = Type.title.copy(fontSize = 30.sp))
             Tag(game.secret.category)
-            game.secret.closeWord?.let {
-                BasicText("· the imposter's was", style = Type.soft.copy(fontSize = 17.sp))
-                BasicText(it, style = Type.title.copy(fontSize = 30.sp, color = Red))
-            }
         }
         FlowRow(Modifier.weight(1f).padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp), maxItemsInEachRow = 4) {
             // Imposters first.
@@ -335,6 +331,7 @@ fun FinalScreen(state: RoomState, game: GameState, onAgain: () -> Unit, onLobby:
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Pill("Play again", Modifier.focusRequester(main), large = true, onClick = onAgain)
             Pill("Back to the lobby", large = true, onClick = onLobby)
+            Pill("Scores", large = true, onClick = onScores)
         }
     }
 }

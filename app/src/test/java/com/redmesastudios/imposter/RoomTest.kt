@@ -9,7 +9,7 @@ import kotlin.random.Random
 
 class RoomTest {
     private var now = 100_000L
-    private val secret = Secret("Food", "Pizza", null)
+    private val secret = Secret("Food", "Pizza")
     private val choices = listOf("Pizza", "Tacos", "Soup", "Toast", "Pancakes", "Waffles", "Sushi", "Ramen")
 
     private fun room(players: Int, settings: Settings, seed: Int = 1): Room {
@@ -101,14 +101,20 @@ class RoomTest {
     }
 
     @Test
-    fun aCloseWordImposterGetsNoGuess() {
-        val room = room(4, Settings(mode = Mode.Classic, gets = ImposterGets.CloseWord))
+    fun aFinishedGameGivesEverySavedPlayerAResult() {
+        val room = Room("1234", clock = { now }, random = Random(1))
+        repeat(4) { room.join("P$it", it, null, profile = "profile$it") }
+        room.start(secret, choices)
         room.everyoneReady()
         room.callVote(null)
-        room.voteOut(room.game.imposters.single())
+        val imposter = room.game.imposters.single()
+        room.voteOut(room.game.seats.first { it !in room.game.imposters })
         room.afterResult()
-        assertEquals(Phase.Final, room.state.value.phase)
-        assertEquals(Side.Crew, room.game.winner)
+        val results = room.state.value.results(5L)
+        assertEquals(4, results.size)
+        val imposterProfile = room.state.value.player(imposter)!!.profile
+        assertEquals(listOf(imposterProfile), results.filter { it.imposter }.map { it.player })
+        assertTrue(results.all { it.won == it.imposter })
     }
 
     @Test

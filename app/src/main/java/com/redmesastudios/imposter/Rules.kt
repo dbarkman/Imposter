@@ -12,7 +12,6 @@ enum class Mode(val title: String, val note: String) {
 enum class ImposterGets(val title: String, val note: String) {
     Nothing("Nothing", "They only know they're the imposter."),
     Hint("The category", "They know it's, say, Food, but not the word."),
-    CloseWord("A close word", "They get a different word from the same category and don't know they're the imposter."),
 }
 
 enum class VoteRule(val title: String, val note: String) {
@@ -72,18 +71,16 @@ class WordBank(val categories: List<WordCategory>) {
     }
 }
 
-// The secret word, and the imposters' own word when they get a close one.
-data class Secret(val category: String, val word: String, val closeWord: String?)
+data class Secret(val category: String, val word: String)
 
 // A word from the chosen category (or any), avoiding the ones played most recently. `recent`
 // holds "category|word" keys.
-fun pickSecret(bank: WordBank, category: String?, gets: ImposterGets, recent: Collection<String>, random: Random): Secret {
+fun pickSecret(bank: WordBank, category: String?, recent: Collection<String>, random: Random): Secret {
     val pool = bank.categories.filter { category == null || it.name == category }.ifEmpty { bank.categories }
     val all = pool.flatMap { c -> c.words.map { c to it } }
     val fresh = all.filterNot { (c, w) -> "${c.name}|$w" in recent }.ifEmpty { all }
     val (picked, word) = fresh.random(random)
-    val close = if (gets == ImposterGets.CloseWord) picked.words.filter { it != word }.random(random) else null
-    return Secret(picked.name, word, close)
+    return Secret(picked.name, word)
 }
 
 // What an imposter who's voted out picks their guess from: the word and seven others from its

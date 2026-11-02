@@ -52,7 +52,7 @@ import kotlinx.coroutines.delay
 // and aren't dealt in.
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun Lobby(state: RoomState, address: String?, onStart: () -> Unit, onSettings: () -> Unit) {
+fun Lobby(state: RoomState, address: String?, onStart: () -> Unit, onSettings: () -> Unit, onScores: () -> Unit) {
     val start = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { start.requestFocus() } }
     val now by produceState(SystemClock.elapsedRealtime()) {
@@ -120,10 +120,11 @@ fun Lobby(state: RoomState, address: String?, onStart: () -> Unit, onSettings: (
             )
             BasicText(state.settings.summary(here.coerceAtLeast(3)), style = Type.soft.copy(fontSize = 13.sp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Pill(if (here < 3) "Waiting for players" else "Start the game", Modifier.focusRequester(start), large = true) {
+                Pill(if (here < 3) "Need 3 players" else "Start the game", Modifier.focusRequester(start), large = true) {
                     if (here >= 3) onStart()
                 }
                 Pill("Settings", large = true, onClick = onSettings)
+                Pill("Scores", large = true, onClick = onScores)
             }
         }
     }

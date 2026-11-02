@@ -39,9 +39,7 @@ fun phonePage(): String = """
   .dot.huge { width: 96px; height: 96px; font-size: 44px; }
   .tag { font-size: 14px; font-weight: 800; color: #C2B6DA; }
   .card { border-radius: 28px; padding: 26px 22px; background: #241C30; border: 2px solid #33284A; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; cursor: pointer; }
-  .card.imp { border-color: #FF4D5E; background: #2E1A2A; }
   .card .word { font-size: 40px; font-weight: 800; line-height: 1.1; letter-spacing: -0.5px; }
-  .card .word.red { color: #FF4D5E; }
   .card.hidden .word, .card.hidden .soft { filter: blur(14px); }
   .small { font-size: 14px; }
   .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
@@ -83,18 +81,13 @@ function list(names) {
   return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
 }
 
-// What you are this game: the word (crew, or an imposter with a close word who doesn't know
-// it), or the imposter card.
+// Your word this game. An imposter's says "Imposter" in the same place, size and color as
+// everyone else's word, so a glance at a phone gives nothing away.
 function card(v, hidden) {
-  var inner;
-  if (v.imposter) {
-    inner = '<p class="soft small">You are</p><div class="word red">THE IMPOSTER</div>' +
-      (v.category ? '<p class="soft">The category is ' + esc(v.category) + '</p>' : '<p class="soft">Nobody will tell you the word. Blend in.</p>') +
-      (v.partners.length ? '<p class="soft small">Also an imposter: ' + esc(list(v.partners)) + '</p>' : '');
-  } else {
-    inner = '<p class="soft small">The secret word</p><div class="word">' + esc(v.word) + '</div><p class="soft">' + esc(v.category) + '</p>';
-  }
-  return '<div class="card' + (v.imposter ? ' imp' : '') + (hidden ? ' hidden' : '') + '" id="card">' + inner +
+  var inner = '<p class="soft small">Your word</p><div class="word">' + esc(v.word) + '</div>' +
+    '<p class="soft">' + esc(v.category || 'No hint') + '</p>' +
+    (v.partners.length ? '<p class="soft small">With ' + esc(list(v.partners)) + '</p>' : '');
+  return '<div class="card' + (hidden ? ' hidden' : '') + '" id="card">' + inner +
     '<p class="soft small" style="filter:none">' + (hidden ? 'Tap to look' : 'Tap to hide') + '</p></div>';
 }
 
@@ -197,7 +190,7 @@ function render(v, force) {
     // The card hides when the clues start, so nobody sees it over a shoulder.
     if (!hiddenFor.clued) hiddenFor = { game: v.game, hidden: true, clued: true };
     html = header(v, 'ROUND ' + v.round) + (v.myTurn
-      ? '<div class="big"><h1>Your turn!</h1><p class="soft">Say one word out loud that fits ' + (v.imposter ? 'what everyone else seems to have.' : 'the secret word, without giving it away.') + '</p></div>' +
+      ? '<div class="big"><h1>Your turn!</h1><p class="soft">Say one word out loud that fits the secret word, without giving it away.</p></div>' +
         card(v, hiddenFor.hidden) + '<div class="push"><button class="go" id="done">Done</button></div>'
       : '<div class="big">' + dot(v.speaker, v.speakerColor, true) + '<h1>' + esc(v.speaker) + '\'s turn</h1><p class="soft">Listen for a clue that doesn\'t fit.</p></div>' +
         card(v, hiddenFor.hidden) + '<div class="push"><button class="go quiet" id="call">I know who it is · call a vote</button></div>');
@@ -244,7 +237,7 @@ function render(v, force) {
     var crew = v.winner === 'crew';
     html = header(v) + '<div class="big"><p class="soft">' + esc(v.ending) + '</p><h1 class="' + (v.won ? 'win' : 'lose') + '">' + (v.won ? 'You win!' : 'You lose') + '</h1>' +
       '<p>' + (crew ? 'The crew wins.' : (v.imposters.length > 1 ? 'The imposters win.' : 'The imposter wins.')) + '</p>' +
-      '<p class="soft">The word was <b>' + esc(v.secret) + '</b> (' + esc(v.secretCategory) + ')' + (v.closeWord ? ', and the imposter\'s was <b>' + esc(v.closeWord) + '</b>' : '') + '.</p>' +
+      '<p class="soft">The word was <b>' + esc(v.secret) + '</b> (' + esc(v.secretCategory) + ').</p>' +
       '<p class="soft">' + (v.imposters.length > 1 ? 'The imposters were ' : 'The imposter was ') + esc(list(v.imposters)) + '.</p></div>';
   }
   app.innerHTML = html;

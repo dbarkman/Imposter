@@ -89,15 +89,15 @@ class Server(private val context: Context, private val room: Room) {
             }
             request.method == "GET" && request.path == "/api/players" -> {
                 val seated = room.seatedProfiles()
-                val players = Players.state.value.live().map {
+                val players = Records.state.value.players.map {
                     JSONObject().put("id", it.id).put("name", it.name).put("color", it.color).put("playing", it.id in seated)
                 }
                 writeJson(out, 200, JSONObject().put("players", JSONArray(players)))
             }
             request.method == "POST" && request.path == "/api/join" -> {
                 // A saved player joins as themselves; a new name becomes a saved player.
-                val saved = Players.find(json.optString("profile").ifEmpty { null })
-                    ?: json.optString("name").trim().takeIf { it.isNotEmpty() }?.let { Players.add(it, json.optInt("color")) }
+                val saved = Records.find(json.optString("profile").ifEmpty { null })
+                    ?: json.optString("name").trim().takeIf { it.isNotEmpty() }?.let { Records.addPlayer(it, json.optInt("color")) }
                 val player = if (saved == null) null else room.join(saved.name, saved.color, json.optString("id").ifEmpty { null }, saved.id)
                 if (player == null) writeJson(out, 409, JSONObject().put("error", "taken"))
                 else writeJson(out, 200, JSONObject().put("id", player.id).put("profile", saved!!.id))

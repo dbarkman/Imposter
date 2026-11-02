@@ -1,7 +1,6 @@
 package com.redmesastudios.imposter
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -49,24 +48,14 @@ class RulesTest {
     }
 
     @Test
-    fun aCloseWordComesFromTheSameCategory() {
-        repeat(20) { seed ->
-            val secret = pickSecret(bank, "Food", ImposterGets.CloseWord, emptySet(), Random(seed))
-            assertEquals("Food", secret.category)
-            assertNotEquals(secret.word, secret.closeWord)
-            assertTrue(secret.closeWord in bank.categories[0].words)
-        }
-    }
-
-    @Test
     fun recentWordsWaitTheirTurn() {
         val recent = setOf("Animals|Dog")
-        repeat(20) { seed -> assertEquals("Cat", pickSecret(bank, "Animals", ImposterGets.Hint, recent, Random(seed)).word) }
+        repeat(20) { seed -> assertEquals("Cat", pickSecret(bank, "Animals", recent, Random(seed)).word) }
     }
 
     @Test
     fun theGuessIncludesTheWordAndSevenOthers() {
-        val secret = Secret("Food", "Pizza", null)
+        val secret = Secret("Food", "Pizza")
         val choices = guessChoices(bank, secret, Random(1))
         assertEquals(8, choices.size)
         assertTrue("Pizza" in choices)

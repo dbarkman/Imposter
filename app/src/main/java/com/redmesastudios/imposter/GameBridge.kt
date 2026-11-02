@@ -1,6 +1,7 @@
 package com.redmesastudios.imposter
 
 import org.json.JSONArray
+import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.IOException
 import java.net.InetSocketAddress
@@ -8,19 +9,24 @@ import java.net.Socket
 
 private const val SimpleTvPort = 8724
 
-// The household's TVs share players through SimpleTV, which runs on every stick all the time
-// (it's the home screen) and passes other apps' records between them. Imposter hands its
-// players to the SimpleTV on the same stick and gets back the household's copy, which
-// includes everyone added in Trivia Night. Requests carry the household's sync key
-// (BuildConfig.SYNC_KEY, from ~/.config/simpletv/sync_key, the same file SimpleTV is built
-// with); without one, or without SimpleTV, players stay on this TV.
-object Household {
+// The Game Bridge: Red Mesa Studios' games on a stick share the household's players (and keep
+// their own results) through SimpleTV, the home screen, which runs all the time and passes these
+// records between the household's TVs. The game works the same without it; its records then
+// stay on this TV. Each game hands its records to the SimpleTV on the same stick and gets back
+// the household's copy. Requests carry the household's sync key (BuildConfig.SYNC_KEY, from
+// ~/.config/simpletv/sync_key, the same file SimpleTV is built with).
+object GameBridge {
     val enabled: Boolean get() = BuildConfig.SYNC_KEY.isNotEmpty()
 
-    fun exchange(profiles: List<Profile>): List<Profile> {
+    // Sends every collection and returns what SimpleTV holds after merging it in.
+    fun exchange(saved: Saved): Saved {
         if (!enabled) throw IOException("no sync key")
-        val body = profilesToJson(profiles).toString().toByteArray()
-        return profilesFromJson(JSONArray(String(post("/sync/shared/$PlayersCollection", body))))
+        val mine = savedToJson(saved)
+        val merged = JSONObject()
+        for (collection in listOf(PlayersCollection, ResultsCollection)) {
+            merged.put(collection, JSONArray(String(post("/sync/shared/$collection", mine.getJSONArray(collection).toString().toByteArray()))))
+        }
+        return savedFromJson(merged)
     }
 
     // Plain HTTP over a socket to this stick's own SimpleTV; it never leaves the device.

@@ -70,7 +70,7 @@ fun Pill(label: String, modifier: Modifier = Modifier, selected: Boolean = false
             .border(1.dp, border, CircleShape)
             .then(focus)
             .pressable(onClick)
-            .padding(horizontal = if (large) 32.dp else 14.dp, vertical = if (large) 12.dp else 6.dp),
+            .padding(horizontal = if (large) 26.dp else 14.dp, vertical = if (large) 12.dp else 6.dp),
     ) {
         BasicText(label, style = if (large) Type.button else Type.chip, color = { ink }, maxLines = 1, softWrap = false)
     }
