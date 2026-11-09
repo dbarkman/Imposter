@@ -63,7 +63,8 @@ can start outnumbered.
 - `GameBridge.kt` — the Game Bridge: Red Mesa Studios games share the `players` collection
   and keep their own results (`imposter-games`) through SimpleTV's shared box on
   127.0.0.1:8724, using SimpleTV's sync key (`~/.config/simpletv/sync_key`, baked into
-  `BuildConfig.SYNC_KEY`). Without SimpleTV or the key, the game works the same and its
+  `BuildConfig.SYNC_KEY`; `-Phousehold=<name>` builds for another household with
+  `~/.config/simpletv/<name>/sync_key`, as SimpleTV does). Without SimpleTV or the key, the game works the same and its
   records stay on the one TV.
 - `ScoresScreen.kt` — the scoreboard (played, won, lost, win %, wins as imposter and as crew)
   and the player editor (name with the TV keyboard, color, remove).

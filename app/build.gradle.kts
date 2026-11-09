@@ -8,6 +8,11 @@ fun secret(path: String): String = providers
     .fileContents(layout.projectDirectory.file(System.getProperty("user.home") + "/" + path))
     .asText.orNull?.trim().orEmpty()
 
+// The household this build is for (-Phousehold=mom), as in SimpleTV: its sync key comes from
+// ~/.config/simpletv/<household>/; without it, from ~/.config/simpletv/ itself.
+val household = providers.gradleProperty("household").orNull.orEmpty()
+val householdDir = ".config/simpletv" + if (household.isEmpty()) "" else "/$household"
+
 android {
     namespace = "com.redmesastudios.imposter"
     compileSdk {
@@ -21,7 +26,7 @@ android {
         versionCode = 1
         versionName = "1.0"
         // The household's TVs share players through SimpleTV, with SimpleTV's key.
-        buildConfigField("String", "SYNC_KEY", "\"${secret(".config/simpletv/sync_key")}\"")
+        buildConfigField("String", "SYNC_KEY", "\"${secret("$householdDir/sync_key")}\"")
     }
 
     buildTypes {

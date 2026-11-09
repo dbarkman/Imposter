@@ -2,6 +2,7 @@ package com.redmesastudios.imposter
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
@@ -140,9 +141,21 @@ internal fun writeHttpResponse(out: OutputStream, status: Int, type: String, bod
     out.flush()
 }
 
-// The stick's own address on the home network.
+// The stick's own address on the home network: its Wi-Fi's (or wired) address, never a
+// VPN's. With Tailscale running, the active network is the VPN, whose 100.x address phones
+// on the Wi-Fi can't reach.
 fun localAddress(context: Context): String? {
     val connectivity = context.getSystemService(ConnectivityManager::class.java)
-    val links = connectivity.getLinkProperties(connectivity.activeNetwork) ?: return null
-    return links.linkAddresses.map { it.address }.firstOrNull { it is Inet4Address && !it.isLoopbackAddress }?.hostAddress
+    @Suppress("DEPRECATION")
+    return connectivity.allNetworks
+        .filter { network ->
+            connectivity.getNetworkCapabilities(network)?.let {
+                !it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) &&
+                    (it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))
+            } == true
+        }
+        .firstNotNullOfOrNull { network ->
+            connectivity.getLinkProperties(network)?.linkAddresses?.map { it.address }
+                ?.firstOrNull { it is Inet4Address && !it.isLoopbackAddress }?.hostAddress
+        }
 }
